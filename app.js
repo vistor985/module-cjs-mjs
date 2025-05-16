@@ -1,16 +1,23 @@
-// 强制清除所有潜在的代理环境变量
-delete process.env.ALL_PROXY;
-delete process.env.all_proxy;
-delete process.env.HTTP_PROXY;
-delete process.env.HTTPS_PROXY;
-
 const axios = require('axios');
+const { SocksProxyAgent } = require('socks-proxy-agent');
+
+// 替换为你的 SOCKS 代理地址
+const agent = new SocksProxyAgent('socks://127.0.0.1:7891/');
 
 async function getPost() {
-  const res = await axios.get('https://jsonplaceholder.typicode.com/posts/1', {
-    proxy: false, // 显式禁用代理
-  });
-  console.log(res.data);
+  try {
+    const res = await axios.get(
+      'https://jsonplaceholder.typicode.com/posts/1',
+      {
+        proxy: false, // 禁用 axios 内置代理设置，防止环境变量或默认代理逻辑影响
+        httpAgent: agent, // 针对 HTTP 请求
+        httpsAgent: agent, // 针对 HTTPS 请求
+      }
+    );
+    console.log(res.data);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 getPost();
